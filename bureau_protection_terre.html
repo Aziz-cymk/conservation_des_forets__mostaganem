@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bureau de Protection de la Terre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2980b9;
+        }
+        .office {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .office h3 {
+            color: #34495e;
+        }
+        .office input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .file-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #2980b9;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background-color: #1e6a8b;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Bureau de Protection de la Terre</h2>
+
+        <!-- Ajout de plusieurs bureaux -->
+        <div class="office" id="office1">
+            <h3>Bureau 1 : Protection de la Terre</h3>
+            <input type="file" id="file1" multiple onchange="handleFileSelect(event, 'file1')">
+            <div class="file-container" id="file1-container"></div>
+        </div>
+
+       
+
+        <button onclick="saveFiles()">Enregistrer les Fichiers</button>
+    </div>
+
+    <script>
+        // Fonction pour gérer la sélection des fichiers
+        function handleFileSelect(event, fileId) {
+            const files = event.target.files;
+            const fileContainer = document.getElementById(fileId + '-container');
+            fileContainer.innerHTML = ""; // Réinitialiser la zone d'affichage
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileURL = URL.createObjectURL(file);
+                const fileName = file.name;
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('file-item');
+                const fileLink = document.createElement('a');
+                fileLink.href = fileURL;
+                fileLink.target = '_blank';
+                fileLink.textContent = fileName;
+
+                // Ajouter un bouton de suppression pour chaque fichier
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.textContent = 'Supprimer';
+                deleteBtn.onclick = function() {
+                    if (confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
+                        fileItem.remove();
+                        removeFromLocalStorage(fileName); // Supprimer du localStorage
+                    }
+                };
+
+                fileItem.appendChild(fileLink);
+                fileItem.appendChild(deleteBtn);
+                fileContainer.appendChild(fileItem);
+
+                // Sauvegarder le fichier dans le localStorage
+                saveToLocalStorage(fileURL, fileName);
+            }
+        }
+
+        // Fonction pour sauvegarder les fichiers dans le localStorage
+        function saveToLocalStorage(fileURL, fileName) {
+            let savedFiles = JSON.parse(localStorage.getItem('savedFiles')) || [];
+            savedFiles.push({ fileURL, fileName });
+            localStorage.setItem('savedFiles', JSON.stringify(savedFiles));
+            loadSavedFiles(); // Recharger les fichiers sauvegardés
+        }
+
+        // Fonction pour supprimer un fichier du localStorage
+        function removeFromLocalStorage(fileName) {
+            let savedFiles = JSON.parse(localStorage.getItem('savedFiles')) || [];
+            savedFiles = savedFiles.filter(file => file.fileName !== fileName);
+            localStorage.setItem('savedFiles', JSON.stringify(savedFiles));
+            loadSavedFiles(); // Recharger les fichiers après suppression
+        }
+
+        // Fonction pour charger les fichiers sauvegardés
+        function loadSavedFiles() {
+            const savedFiles = JSON.parse(localStorage.getItem('savedFiles')) || [];
+            const fileContainer1 = document.getElementById('file1-container');
+            const fileContainer2 = document.getElementById('file2-container');
+
+            // Réinitialiser les zones d'affichage
+            fileContainer1.innerHTML = "";
+            fileContainer2.innerHTML = "";
+
+            savedFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('file-item');
+                const fileLink = document.createElement('a');
+                fileLink.href = file.fileURL;
+                fileLink.target = '_blank';
+                fileLink.textContent = file.fileName;
+
+                // Ajouter un bouton de suppression pour les fichiers sauvegardés
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.textContent = 'Supprimer';
+                deleteBtn.onclick = function() {
+                    fileItem.remove();
+                    removeFromLocalStorage(file.fileName); // Supprimer du localStorage
+                };
+
+                fileItem.appendChild(fileLink);
+                fileItem.appendChild(deleteBtn);
+
+                // Ajouter les fichiers sauvegardés dans les conteneurs correspondants
+                if (file.fileName.includes("Bureau 1")) {
+                    fileContainer1.appendChild(fileItem);
+                } else {
+                    fileContainer2.appendChild(fileItem);
+                }
+            });
+        }
+
+        // Fonction de sauvegarde (en fait une alerte pour indiquer que les fichiers ont été enregistrés)
+        function saveFiles() {
+            alert('Fichiers enregistrés avec succès !');
+        }
+
+        // Charger les fichiers lors de l'ouverture de la page
+        window.onload = function() {
+            loadSavedFiles();
+        }
+    </script>
+
+</body>
+</html>

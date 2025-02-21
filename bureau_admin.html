@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bureau d'Administration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2980b9;
+        }
+        .office {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .office h3 {
+            color: #34495e;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .file-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .file-item {
+            margin: 5px;
+            padding: 10px;
+            background-color: #dfe6e9;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 250px;
+        }
+        .file-item button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .file-item button:hover {
+            background-color: #c0392b;
+        }
+        button {
+            background-color: #2980b9;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background-color: #1e6a8b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>مكتب الميزانية و الوسائل</h2>
+
+        <div class="office">
+            <h3>Documents du Bureau d'Administration</h3>
+            <input type="file" id="file9" multiple onchange="handleFileSelect(event)">
+            <div class="file-container" id="file9-container"></div>
+        </div>
+
+        <button onclick="saveFiles()">Enregistrer les Fichiers</button>
+    </div>
+
+    <script>
+        const storageKey = 'adminDocuments'; // clé pour localStorage
+
+        // Fonction pour gérer la sélection des fichiers
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const fileContainer = document.getElementById('file9-container');
+            fileContainer.innerHTML = ""; // Réinitialiser la zone d'affichage
+
+            // Ajouter les fichiers au localStorage et à l'interface
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('file-item');
+                
+                const fileName = document.createElement('span');
+                fileName.textContent = file.name;
+                fileItem.appendChild(fileName);
+
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const fileURL = e.target.result; // La donnée Base64 du fichier
+
+                    let fileLink;
+
+                    // Vérifier si le fichier est une image
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = fileURL;
+                        img.style.maxWidth = '100px'; // Limiter la taille des images
+                        fileItem.appendChild(img);
+                    } 
+                    // Vérifier si le fichier est un PDF
+                    else if (file.type === 'application/pdf') {
+                        fileLink = document.createElement('a');
+                        fileLink.href = fileURL;
+                        fileLink.target = '_blank';
+                        fileLink.textContent = "Cliquez ici pour ouvrir le PDF";
+                        fileItem.appendChild(fileLink);
+                    }
+
+                    // Ajouter un bouton de suppression
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Supprimer';
+                    deleteButton.onclick = function() {
+                        fileItem.remove();
+                        removeFromLocalStorage(file.name); // Supprimer du localStorage
+                    };
+                    fileItem.appendChild(deleteButton);
+
+                    // Ajouter un bouton de téléchargement
+                    const downloadButton = document.createElement('button');
+                    downloadButton.textContent = 'Télécharger';
+                    downloadButton.onclick = function() {
+                        const a = document.createElement('a');
+                        a.href = fileURL;
+                        a.download = file.name; // Nom du fichier téléchargé
+                        a.click();
+                    };
+                    fileItem.appendChild(downloadButton);
+
+                    // Ajouter l'élément de fichier au conteneur
+                    fileContainer.appendChild(fileItem);
+
+                    // Sauvegarder le fichier dans le localStorage
+                    saveToLocalStorage(fileURL, file.name);
+                }
+
+                // Lire le fichier en Base64
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Fonction pour sauvegarder les fichiers dans le localStorage
+        function saveToLocalStorage(fileURL, fileName) {
+            let savedFiles = JSON.parse(localStorage.getItem(storageKey)) || [];
+            savedFiles.push({ fileURL, fileName });
+            localStorage.setItem(storageKey, JSON.stringify(savedFiles));
+        }
+
+        // Fonction pour supprimer un fichier du localStorage
+        function removeFromLocalStorage(fileName) {
+            let savedFiles = JSON.parse(localStorage.getItem(storageKey)) || [];
+            savedFiles = savedFiles.filter(file => file.fileName !== fileName);
+            localStorage.setItem(storageKey, JSON.stringify(savedFiles));
+        }
+
+        // Fonction pour charger les fichiers sauvegardés du localStorage
+        function loadSavedFiles() {
+            const savedFiles = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const fileContainer = document.getElementById('file9-container');
+            fileContainer.innerHTML = ""; // Réinitialiser la zone d'affichage
+
+            savedFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('file-item');
+                
+                const fileName = document.createElement('span');
+                fileName.textContent = file.fileName;
+                fileItem.appendChild(fileName);
+
+                // Vérifier si le fichier est une image
+                if (file.fileName.endsWith(".jpg") || file.fileName.endsWith(".png") || file.fileName.endsWith(".gif")) {
+                    const img = document.createElement('img');
+                    img.src = file.fileURL;
+                    img.style.maxWidth = '100px';
+                    fileItem.appendChild(img);
+                } 
+                // Vérifier si le fichier est un PDF
+                else if (file.fileName.endsWith(".pdf")) {
+                    const fileLink = document.createElement('a');
+                    fileLink.href = file.fileURL;
+                    fileLink.target = '_blank';
+                    fileLink.textContent = "Cliquez ici pour ouvrir le fichier";
+                    fileItem.appendChild(fileLink);
+                }
+
+                // Ajouter un bouton de suppression
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.onclick = function() {
+                    fileItem.remove();
+                    removeFromLocalStorage(file.fileName); // Supprimer du localStorage
+                };
+                fileItem.appendChild(deleteButton);
+
+                // Ajouter un bouton de téléchargement
+                const downloadButton = document.createElement('button');
+                downloadButton.textContent = 'Télécharger';
+                downloadButton.onclick = function() {
+                    const a = document.createElement('a');
+                    a.href = file.fileURL;
+                    a.download = file.fileName; // Nom du fichier téléchargé
+                    a.click();
+                };
+                fileItem.appendChild(downloadButton);
+
+                fileContainer.appendChild(fileItem);
+            });
+        }
+
+        // Fonction de sauvegarde (ici un message simulé)
+        function saveFiles() {
+            const fileContainer = document.getElementById('file9-container');
+            const fileItems = fileContainer.getElementsByClassName('file-item');
+
+            if (fileItems.length === 0) {
+                alert("Aucun fichier à enregistrer.");
+            } else {
+                alert(fileItems.length + " fichier(s) enregistré(s).");
+            }
+        }
+
+        // Charger les fichiers sauvegardés lors du chargement de la page
+        window.onload = function() {
+            loadSavedFiles();
+        }
+    </script>
+
+</body>
+</html>
