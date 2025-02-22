@@ -68,13 +68,13 @@
 
     <div class="form-container" id="dataForm" style="display:none;">
         <h2>Collecte de Données Dendométriques</h2>
-        <form action="F:\Nouveau dossier\submit_data.php" method="POST">
+        <form action="http://localhost/dossier/submit_data.html" method="POST">
+
+ <label for="species">Location de l'arbre</label>
+            <input type="text" id="species" name="species" required placeholder="Entrez la location de l'arbre">
+
             <label for="species">Espèce de l'arbre</label>
             <input type="text" id="species" name="species" required placeholder="Entrez l'espèce de l'arbre">
-
-            
-            <label for="species">Location de l'arbre </label>
-            <input type="text" id="species" name="species" required placeholder="Entrez la location de l'arbre ">
 
             <label for="diameter">Diamètre (en cm)</label>
             <input type="number" id="diameter" name="diameter" required placeholder="Entrez le diamètre de l'arbre en cm" min="0">
