@@ -1,29 +1,101 @@
-<div class="container">  
-  <form id="contact" action="" method="post">
-    <button onclick="navigateTo('website.html')">Accueil</button>
-    <h3>Contact Form</h3>
-    <h4>Contact us for custom quote</h4>
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire de Contact</title>
     <link rel="stylesheet" href="contact.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        fieldset {
+            border: none;
+            margin-bottom: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
 
-    <fieldset>
-      <input placeholder="Your name" type="text" tabindex="1" required autofocus>
-    </fieldset>
-    <fieldset>
-      <input placeholder="Your Email Address" type="email" tabindex="2" required>
-    </fieldset>
-    <fieldset>
-      <input placeholder="Your Phone Number (optional)" type="tel" tabindex="3" required>
-    </fieldset>
-    <fieldset>
-      <input placeholder="Your Web Site (optional)" type="url" tabindex="4" required>
-    </fieldset>
-    <fieldset>
-      <textarea placeholder="Type your message here...." tabindex="5" required></textarea>
-    </fieldset>
-    <fieldset>
-      <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
-    </fieldset>
-    
-  </form>
+<div class="container">
+    <button onclick="navigateTo('website.html')">Accueil</button>
+    <h3>Formulaire de Contact</h3>
+    <h4>Contactez-nous pour un devis personnalisé</h4>
+
+    <form id="contactForm">
+        <fieldset>
+            <input placeholder="Votre Nom" type="text" name="name" required>
+        </fieldset>
+        <fieldset>
+            <input placeholder="Votre Email" type="email" name="email" required>
+        </fieldset>
+        <fieldset>
+            <input placeholder="Votre Téléphone" type="tel" name="phone" required>
+        </fieldset>
+        <fieldset>
+            <input placeholder="Votre Site Web" type="url" name="website" required>
+        </fieldset>
+        <fieldset>
+            <textarea placeholder="Votre Message..." name="message" required></textarea>
+        </fieldset>
+        <fieldset>
+            <button type="submit">Soumettre</button>
+        </fieldset>
+    </form>
+
+    <p id="responseMessage" style="color: green; font-weight: bold;"></p>
 </div>
+
+<script>
+    document.getElementById("contactForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        let formData = new FormData(this);
+
+        fetch("send_email.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("responseMessage").innerText = data;
+            this.reset();
+        })
+        .catch(error => console.error("Erreur:", error));
+    });
+
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+</script>
+
+</body>
+</html>
