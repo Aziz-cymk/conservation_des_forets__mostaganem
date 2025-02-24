@@ -41,6 +41,23 @@
         button:hover {
             background-color: #45a049;
         }
+        .message-box {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -71,29 +88,39 @@
         </fieldset>
     </form>
 
-    <p id="responseMessage" style="color: green; font-weight: bold;"></p>
+    <p id="responseMessage" class="message-box"></p>
 </div>
 
 <script>
     document.getElementById("contactForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+        event.preventDefault(); // Empêcher le rechargement de la page
 
         let formData = new FormData(this);
+        let responseMessage = document.getElementById("responseMessage");
 
         fetch("send_email.php", {
             method: "POST",
             body: formData
         })
-        .then(response => response.json())
+        .then(response => response.json()) // Assurez-vous que PHP renvoie un JSON
         .then(data => {
-            document.getElementById("responseMessage").innerText = data.message;
+            responseMessage.style.display = "block";
+            responseMessage.innerText = data.message;
+
             if (data.success) {
-                this.reset();
+                responseMessage.className = "message-box success";
+                this.reset(); // Réinitialiser le formulaire après succès
             } else {
-                document.getElementById("responseMessage").style.color = "red";
+                responseMessage.className = "message-box error";
+                console.error("Erreur serveur:", data.message);
             }
         })
-        .catch(error => console.error("Erreur:", error));
+        .catch(error => {
+            responseMessage.innerText = "Une erreur est survenue. Veuillez réessayer.";
+            responseMessage.className = "message-box error";
+            responseMessage.style.display = "block";
+            console.error("Erreur:", error);
+        });
     });
 
     function navigateTo(page) {
