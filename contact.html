@@ -46,7 +46,7 @@
 <body>
 
 <div class="container">
-    <button onclick="navigateTo('website.html')">Accueil</button>
+    <button onclick="navigateTo('index.html')">Accueil</button>
     <h3>Formulaire de Contact</h3>
     <h4>Contactez-nous pour un devis personnalisé</h4>
 
@@ -58,10 +58,10 @@
             <input placeholder="Votre Email" type="email" name="email" required>
         </fieldset>
         <fieldset>
-            <input placeholder="Votre Téléphone" type="tel" name="phone" required>
+            <input placeholder="Votre Téléphone" type="tel" name="phone">
         </fieldset>
         <fieldset>
-            <input placeholder="Votre Site Web" type="url" name="website" required>
+            <input placeholder="Votre Site Web" type="url" name="website">
         </fieldset>
         <fieldset>
             <textarea placeholder="Votre Message..." name="message" required></textarea>
@@ -84,10 +84,14 @@
             method: "POST",
             body: formData
         })
-        .then(response => response.text())
+        .then(response => response.json())
         .then(data => {
-            document.getElementById("responseMessage").innerText = data;
-            this.reset();
+            document.getElementById("responseMessage").innerText = data.message;
+            if (data.success) {
+                this.reset();
+            } else {
+                document.getElementById("responseMessage").style.color = "red";
+            }
         })
         .catch(error => console.error("Erreur:", error));
     });
