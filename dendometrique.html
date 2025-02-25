@@ -3,108 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentification</title>
+    <title>Gestion des Espèces d'Arbres</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
-            margin: 0;
             padding: 20px;
         }
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-        }
-        .form-container {
-            max-width: 400px;
-            margin: 0 auto;
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
             padding: 20px;
-            background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        label {
-            font-weight: bold;
-            margin-top: 10px;
-            display: block;
-        }
-        input[type="email"], input[type="password"], input[type="submit"] {
+        input, button {
             width: 100%;
             padding: 8px;
-            margin: 8px 0 20px;
+            margin-top: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        input[type="submit"] {
+        button {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
         }
-        input[type="submit"]:hover {
+        button:hover {
             background-color: #45a049;
         }
-        .error {
-            color: red;
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: darkred;
         }
     </style>
 </head>
 <body>
 
+<div class="container">
+    <h2>Gestion des Espèces d'Arbres</h2>
+    
+    <form id="treeForm">
+        <label for="location">Localisation</label>
+        <input type="text" id="location" name="location" required placeholder="Entrez la localisation">
 
-    <div class="form-container" id="loginForm">
-        <form id="loginForm" onsubmit="return authenticate(event)">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" required placeholder="Entrez votre e-mail">
+        <label for="species">Espèce</label>
+        <input type="text" id="species" name="species" required placeholder="Entrez l'espèce de l'arbre">
 
-            <label for="password">Mot de passe</label>
-            <input type="password" id="password" name="password" required placeholder="Entrez votre mot de passe">
+        <label for="diameter">Diamètre (cm)</label>
+        <input type="number" id="diameter" name="diameter" required min="0">
 
-            <input type="submit" value="Se connecter">
-        </form>
-        <p class="error" id="errorMessage"></p>
-    </div>
+        <label for="height">Hauteur (m)</label>
+        <input type="number" id="height" name="height" required min="0">
 
-    <div class="form-container" id="dataForm" style="display:none;">
-        <h2>Collecte de Données Dendométriques</h2>
-        <form action="http://localhost/dossier/login.html" method="POST">
+        <button type="submit">Sauvegarder</button>
+    </form>
 
- <label for="species">Location de l'arbre</label>
-            <input type="text" id="species" name="species" required placeholder="Entrez la location de l'arbre">
+    <h2>Liste des Espèces</h2>
+    <table id="treeTable">
+        <tr>
+            <th>ID</th>
+            <th>Localisation</th>
+            <th>Espèce</th>
+            <th>Diamètre (cm)</th>
+            <th>Hauteur (m)</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+</div>
 
-            <label for="species">Espèce de l'arbre</label>
-            <input type="text" id="species" name="species" required placeholder="Entrez l'espèce de l'arbre">
+<script>
+document.getElementById("treeForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    let formData = new FormData(this);
 
-            <label for="diameter">Diamètre (en cm)</label>
-            <input type="number" id="diameter" name="diameter" required placeholder="Entrez le diamètre de l'arbre en cm" min="0">
+    fetch("index.php?action=save", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        loadTrees();
+    })
+    .catch(error => console.error("Erreur:", error));
+});
 
-            <label for="height">Hauteur (en m)</label>
-            <input type="number" id="height" name="height" required placeholder="Entrez la hauteur de l'arbre en m" min="0">
+function loadTrees() {
+    fetch("index.php?action=load")
+    .then(response => response.json())
+    .then(data => {
+        let table = document.getElementById("treeTable");
+        table.innerHTML = `<tr>
+            <th>ID</th>
+            <th>Localisation</th>
+            <th>Espèce</th>
+            <th>Diamètre (cm)</th>
+            <th>Hauteur (m)</th>
+            <th>Actions</th>
+        </tr>`;
 
-            <input type="submit" value="Soumettre les données">
-            
-        </form>
-    </div>
+        data.forEach(tree => {
+            let row = table.insertRow();
+            row.innerHTML = `<td>${tree.id}</td>
+                <td>${tree.location}</td>
+                <td>${tree.species}</td>
+                <td>${tree.diameter}</td>
+                <td>${tree.height}</td>
+                <td><button class='delete-btn' onclick='deleteTree(${tree.id})'>Supprimer</button></td>`;
+        });
+    });
+}
 
-    <script>
-        // Fonction d'authentification
-        function authenticate(event) {
-            event.preventDefault();  // Empêche la soumission du formulaire
+function deleteTree(id) {
+    fetch("index.php?action=delete&id=" + id)
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        loadTrees();
+    });
+}
 
-            var email = document.getElementById("email").value;
-            var password = document.getElementById("password").value;
-            var errorMessage = document.getElementById("errorMessage");
-            
-            // Vérification des identifiants
-            if (email === "azizhicham136@gmail.com" && password === "123") {
-                document.getElementById("loginForm").style.display = "none";  // Cache le formulaire de connexion
-                document.getElementById("dataForm").style.display = "block";  // Affiche le formulaire de collecte de données
-            } else {
-                errorMessage.textContent = "Identifiants incorrects. Veuillez réessayer.";  // Affiche un message d'erreur
-            }
-        }
-    </script>
+window.onload = loadTrees;
+</script>
 
 </body>
 </html>
