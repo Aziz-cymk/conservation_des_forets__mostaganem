@@ -97,53 +97,53 @@
 <script>
 document.getElementById("treeForm").addEventListener("submit", function(event) {
     event.preventDefault();
-    let formData = new FormData(this);
 
-    fetch("index.php?action=save", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        loadTrees();
-    })
-    .catch(error => console.error("Erreur:", error));
+    let trees = JSON.parse(localStorage.getItem("trees")) || [];
+
+    let newTree = {
+        id: Date.now(),
+        location: document.getElementById("location").value,
+        species: document.getElementById("species").value,
+        diameter: document.getElementById("diameter").value,
+        height: document.getElementById("height").value
+    };
+
+    trees.push(newTree);
+    localStorage.setItem("trees", JSON.stringify(trees));
+
+    document.getElementById("treeForm").reset();
+    loadTrees();
 });
 
 function loadTrees() {
-    fetch("index.php?action=load")
-    .then(response => response.json())
-    .then(data => {
-        let table = document.getElementById("treeTable");
-        table.innerHTML = `<tr>
-            <th>ID</th>
-            <th>Localisation</th>
-            <th>Espèce</th>
-            <th>Diamètre (cm)</th>
-            <th>Hauteur (m)</th>
-            <th>Actions</th>
-        </tr>`;
+    let trees = JSON.parse(localStorage.getItem("trees")) || [];
+    let table = document.getElementById("treeTable");
 
-        data.forEach(tree => {
-            let row = table.insertRow();
-            row.innerHTML = `<td>${tree.id}</td>
-                <td>${tree.location}</td>
-                <td>${tree.species}</td>
-                <td>${tree.diameter}</td>
-                <td>${tree.height}</td>
-                <td><button class='delete-btn' onclick='deleteTree(${tree.id})'>Supprimer</button></td>`;
-        });
+    table.innerHTML = `<tr>
+        <th>ID</th>
+        <th>Localisation</th>
+        <th>Espèce</th>
+        <th>Diamètre (cm)</th>
+        <th>Hauteur (m)</th>
+        <th>Actions</th>
+    </tr>`;
+
+    trees.forEach(tree => {
+        let row = table.insertRow();
+        row.innerHTML = `<td>${tree.id}</td>
+            <td>${tree.location}</td>
+            <td>${tree.species}</td>
+            <td>${tree.diameter}</td>
+            <td>${tree.height}</td>
+            <td><button class='delete-btn' onclick='deleteTree(${tree.id})'>Supprimer</button></td>`;
     });
 }
 
 function deleteTree(id) {
-    fetch("index.php?action=delete&id=" + id)
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        loadTrees();
-    });
+    let trees = JSON.parse(localStorage.getItem("trees")) || [];
+    trees = trees.filter(tree => tree.id !== id);
+    localStorage.setItem("trees", JSON.stringify(trees));
+    loadTrees();
 }
 
 window.onload = loadTrees;
